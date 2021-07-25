@@ -1,2 +1,4 @@
 /venv/
 /.idea/
+/bot/test.sqlite
+/bot/bot.log
