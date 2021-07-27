@@ -220,7 +220,7 @@ def help_handler(message):
         "/new_meeting - Create new meeting\n" +
         "/task_edit - Edit task(not ready)\n" +
         "/meeting_edit - Edit meeting(not ready)\n" +
-        "/task_list - List tasks(not ready)\n" +
+        "/task_list - List tasks\n" +
         "/meeting_list - List meetings(not ready)\n" +
         "/delete_task - Delete task(not ready)\n" +
         "/delete_meeting - Delete meeting(not ready)\n" +
@@ -234,6 +234,7 @@ def help_handler(message):
     func=lambda message: db.User.is_user_exists(message.chat.id)
 )
 def exit_handler(message):
+    logging.info("User {tg_id} wants to delete account".format(tg_id=message.chat.id))
     user = db.User.get_by_tg_id(message.chat.id)
 
     bot.send_message(
@@ -258,11 +259,41 @@ def yes_no_exit_handler(message, user: db.User):
         )
 
         db.User.delete_cascade(message.chat.id)
+
+        logging.info("User {tg_id} has been deleted his account".format(tg_id=message.chat.id))
     else:
         bot.send_message(
             message.chat.id,
             "Nevermind, i'll forget about this accident",
             reply_markup=markups.gen_delete_markup()
+        )
+
+        logging.info(
+            "User {tg_id} has changed his opinion and hasn't deleted his account".format(tg_id=message.chat.id))
+
+
+@bot.message_handler(
+    commands=['task_list'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def task_list_handler(message):
+    logging.info("User {tg_id} requested task list".format(tg_id=message.chat.id))
+
+    bot.send_message(
+        message.chat.id,
+        "Here:"
+    )
+
+    user = db.User.get_by_tg_id(message.chat.id)
+
+    for task in db.Task.select().where(db.Task.user == user).execute():
+        bot.send_message(
+            message.chat.id,
+            "Name:\n{name}\nDescription:\n{description}\nStatus:\n{status}".format(
+                name=task.name,
+                description=task.description,
+                status=task.status
+            )
         )
 
 
