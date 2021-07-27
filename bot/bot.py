@@ -13,6 +13,8 @@ import bot.markups as markups
 
 bot = telebot.TeleBot(config.bot_token, parse_mode=None)
 
+current_year = datetime.datetime.now().year
+
 
 @bot.message_handler(
     commands=['start'],
@@ -81,9 +83,9 @@ def new_task_name_handler(message, user: db.User):
 
 def new_task_description_handler(message, user: db.User, name: str):
     db.Task.create(
-        user=user,
         name=name,
-        description=message.text
+        description=message.text,
+        user=user
     )
 
     bot.send_message(
@@ -103,49 +105,6 @@ def new_task_description_handler(message, user: db.User, name: str):
 def new_meeting_handler(message):
     logging.info("User {tg_id} started creating new meeting".format(tg_id=message.chat.id))
 
-    user = db.User.get_by_tg_id(message.chat.id)
-    bot.send_message(
-        message.chat.id,
-        "{name}, enter name of the new meeting, please".format(name=user.name.capitalize())
-    )
-
-    bot.register_next_step_handler(
-        message,
-        callback=new_meeting_handler,
-        user=user
-    )
-
-
-def new_meeting_name_handler(message, user: db.User):
-    logging.info("User {tg_id} entered name for the new meeting".format(tg_id=message.chat.id))
-
-    bot.send_message(
-        message.chat.id,
-        "{name}, enter description of the new meeting, please".format(name=user.name.capitalize())
-    )
-
-    bot.register_next_step_handler(
-        message,
-        callback=new_meeting_name_handler,
-        user=user,
-        name=message.text
-    )
-
-
-# TODO: finish meeting creation
-def new_meeting_description_handler(message, user: db.User, name: str):
-    pass
-
-
-# Handler for test getting datetime of meeting
-@bot.message_handler(
-    commands=['time'],
-    func=lambda message: db.User.is_user_exists(message.chat.id)
-)
-def time_get_test(message):
-    # TODO: move getting current year somewhere else
-    current_year = datetime.datetime.now().year
-
     bot.send_message(
         message.chat.id,
         "Choose year",
@@ -155,8 +114,41 @@ def time_get_test(message):
     )
 
 
+def new_meeting_name_handler(message, user: db.User, due_date: datetime.datetime):
+    logging.info("User {tg_id} entered name for the new meeting".format(tg_id=message.chat.id))
+
+    bot.send_message(
+        message.chat.id,
+        "{name}, enter description of the new meeting, please".format(name=user.name.capitalize())
+    )
+
+    bot.register_next_step_handler(
+        message,
+        callback=new_meeting_description_handler,
+        user=user,
+        name=message.text,
+        due_date=due_date
+    )
+
+
+def new_meeting_description_handler(message, user: db.User, name: str, due_date: datetime.datetime):
+    db.Meeting.create(
+        name=name,
+        description=message.text,
+        date=due_date,
+        user=user
+    )
+
+    bot.send_message(
+        message.chat.id,
+        "New meeting is ready, it has been added to your meeting list"
+    )
+
+    logging.info("User {tg_id} finished creating of the new meeting".format(tg_id=message.chat.id))
+
+
 @bot.callback_query_handler(
-    func=lambda call: True
+    func=lambda call: db.User.is_user_exists(call.message.chat.id)
 )
 def callback_handler(call):
     data = call.data.split()
@@ -191,8 +183,17 @@ def callback_handler(call):
             int(data[4])
         )
     elif data[0] == "minute":
-        text = "Your meeting has been saved to your list with time {time}".format(
-            time=datetime.datetime(
+        logging.info("User {tg_id} entered datetime of the new meeting".format(tg_id=call.message.chat.id))
+
+        user = db.User.get_by_tg_id(call.message.chat.id)
+
+        text = "{name}, enter name of the new meeting, please".format(name=user.name.capitalize())
+
+        bot.register_next_step_handler(
+            call.message,
+            callback=new_meeting_name_handler,
+            user=user,
+            due_date=datetime.datetime(
                 year=int(data[1]),
                 month=int(data[2]),
                 day=int(data[3]),
