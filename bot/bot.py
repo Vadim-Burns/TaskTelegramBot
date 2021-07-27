@@ -221,7 +221,7 @@ def help_handler(message):
         "/task_edit - Edit task(not ready)\n" +
         "/meeting_edit - Edit meeting(not ready)\n" +
         "/task_list - List tasks\n" +
-        "/meeting_list - List meetings(not ready)\n" +
+        "/meeting_list - List meetings\n" +
         "/delete_task - Delete task(not ready)\n" +
         "/delete_meeting - Delete meeting(not ready)\n" +
         "/exit - Delete all my info\n" +
