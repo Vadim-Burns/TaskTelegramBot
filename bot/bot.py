@@ -1,25 +1,13 @@
-"""
+""" 
 This file includes all business logic of bot.
 All handlers are only here.
 """
 
-import telebot
-import config
-# import database as db
-import logging
-# import database as db
 import logging
 
 import telebot
 
-import config
-
-# TODO: move to __main__.py
-logging.basicConfig(
-    filename="bot.log",
-    format='%(asctime)s: %(thread)d - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s',
-    level=logging.INFO
-)
+import bot.config as config
 
 bot = telebot.TeleBot(config.bot_token, parse_mode=None)
 

@@ -6,7 +6,7 @@ import logging
 
 from peewee import *
 
-from config import database_name
+from bot.config import database_name
 
 # Only for developing
 # TODO: switch to postgresql
@@ -44,3 +44,4 @@ class Task(BaseTask):
 database.create_tables([User, Meeting, Task])
 
 logging.info("Database tables created successfully")
+logging.info("Database is ready for using")
