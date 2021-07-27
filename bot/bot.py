@@ -2,13 +2,14 @@
 This file includes all business logic of bot.
 All handlers are only here.
 """
-
+import datetime
 import logging
 
 import telebot
 
 import bot.config as config
 import bot.database as db
+import bot.markups as markups
 
 bot = telebot.TeleBot(config.bot_token, parse_mode=None)
 
@@ -92,6 +93,96 @@ def new_task_description_handler(message, user: db.User, name: str):
 
     logging.info(
         "User {tg_id} entered description for the new task and finished creating task".format(tg_id=message.chat.id)
+    )
+
+
+@bot.message_handler(
+    commands=['new_meeting'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def new_meeting_handler(message):
+    logging.info("User {tg_id} started creating new meeting".format(tg_id=message.chat.id))
+
+    user = db.User.get_by_tg_id(message.chat.id)
+    bot.send_message(
+        message.chat.id,
+        "{name}, enter name of the new meeting, please".format(name=user.name.capitalize())
+    )
+
+    bot.register_next_step_handler(
+        message,
+        callback=new_meeting_handler,
+        user=user
+    )
+
+
+def new_meeting_name_handler(message, user: db.User):
+    logging.info("User {tg_id} entered name for the new meeting".format(tg_id=message.chat.id))
+
+    bot.send_message(
+        message.chat.id,
+        "{name}, enter description of the new meeting, please".format(name=user.name.capitalize())
+    )
+
+    bot.register_next_step_handler(
+        message,
+        callback=new_meeting_name_handler,
+        user=user,
+        name=message.text
+    )
+
+
+# TODO: finish meeting creation
+def new_meeting_description_handler(message, user: db.User, name: str):
+    pass
+
+
+# Handler for test getting datetime of meeting
+@bot.message_handler(
+    commands=['time'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def time_get_test(message):
+    # TODO: move getting current year somewhere else
+    current_year = datetime.datetime.now().year
+
+    bot.send_message(
+        message.chat.id,
+        "Choose year",
+        reply_markup=markups.gen_years_markup(
+            [i for i in range(current_year, current_year + 5)]
+        )
+    )
+
+
+@bot.callback_query_handler(
+    func=lambda call: True
+)
+def callback_handler(call):
+    data = call.data.split()
+
+    text = None
+    markup = None
+
+    if data[0] == "year":
+        text = "Choose month"
+        markup = markups.gen_months_markup(
+            int(data[1])
+        )
+    elif data[0] == "month":
+        text = "Choose day"
+        markup = markups.gen_days_markup(
+            int(data[1]),
+            int(data[2])
+        )
+    else:
+        text = "Done"
+
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        text=text,
+        reply_markup=markup
     )
 
 
