@@ -175,8 +175,31 @@ def callback_handler(call):
             int(data[1]),
             int(data[2])
         )
-    else:
-        text = "Done"
+    elif data[0] == "day":
+        text = "Choose hour"
+        markup = markups.gen_hours_markup(
+            int(data[1]),
+            int(data[2]),
+            int(data[3])
+        )
+    elif data[0] == "hour":
+        text = "Choose minute"
+        markup = markups.gen_minutes_markup(
+            int(data[1]),
+            int(data[2]),
+            int(data[3]),
+            int(data[4])
+        )
+    elif data[0] == "minute":
+        text = "Your meeting has been saved to your list with time {time}".format(
+            time=datetime.datetime(
+                year=int(data[1]),
+                month=int(data[2]),
+                day=int(data[3]),
+                hour=int(data[4]),
+                minute=int(data[5])
+            )
+        )
 
     bot.edit_message_text(
         chat_id=call.message.chat.id,

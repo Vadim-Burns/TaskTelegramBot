@@ -69,6 +69,9 @@ def gen_years_markup(years: list) -> InlineKeyboardMarkup:
     Example input:
     [2021, 2022, 2023]
 
+    Callback data format:
+    year {year}
+
     Example callback data:
     "year 2021"
 
@@ -95,6 +98,9 @@ def gen_months_markup(year: int) -> InlineKeyboardMarkup:
     """
     Example input:
     2021
+
+    Callback data format:
+    month {year} {month}
 
     Example callback data:
     "month 2021 8"
@@ -138,6 +144,22 @@ def gen_months_markup(year: int) -> InlineKeyboardMarkup:
 
 
 def gen_days_markup(year: int, month: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    2021, 8
+
+    Callback data format:
+    day {year} {month} {day}
+
+    Example callback data:
+    "day 2021 8 14"
+
+    :param year: int of the chosen year
+
+    :param month: int of the chosen month
+
+    :return: InlineKeyboardMarkup
+    """
     markup = InlineKeyboardMarkup()
     month = months[month - 1]
     days = month.get("days")
@@ -154,7 +176,7 @@ def gen_days_markup(year: int, month: int) -> InlineKeyboardMarkup:
                     text=str(day),
                     callback_data="day {year} {month} {day}".format(
                         year=year,
-                        month=month,
+                        month=month.get("number"),
                         day=day
                     )
                 ),
@@ -162,7 +184,7 @@ def gen_days_markup(year: int, month: int) -> InlineKeyboardMarkup:
                     text=str(day + 1),
                     callback_data="day {year} {month} {day}".format(
                         year=year,
-                        month=month,
+                        month=month.get("number"),
                         day=day + 1
                     )
                 )
@@ -178,5 +200,102 @@ def gen_days_markup(year: int, month: int) -> InlineKeyboardMarkup:
                     )
                 )
             )
+
+    return markup
+
+
+def gen_hours_markup(year: int, month: int, day: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    2021, 8, 14
+
+    Callback data format:
+    day {year} {month} {day} {hour}
+
+    Example callback data:
+    "day 2021 8 14 19"
+
+    :param year: int of the chosen year
+
+    :param month: int of the chosen month
+
+    :param day: int of the chosen day
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    for hour in range(0, 24, 2):
+        markup.add(
+            InlineKeyboardButton(
+                text=str(hour),
+                callback_data="hour {year} {month} {day} {hour}".format(
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=hour
+                )
+            ),
+            InlineKeyboardButton(
+                text=str(hour + 1),
+                callback_data="hour {year} {month} {day} {hour}".format(
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=hour + 1
+                )
+            )
+        )
+
+    return markup
+
+
+def gen_minutes_markup(year: int, month: int, day: int, hour: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    2021, 8, 14, 19
+
+    Callback data format:
+    day {year} {month} {day} {hour} {minute}
+
+    Example callback data:
+    "day 2021 8 14 19 25"
+
+    :param year: int of the chosen year
+
+    :param month: int of the chosen month
+
+    :param day: int of the chosen day
+
+    :param hour: int of the chosen hour
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    # Suggest every five minutes
+    for minute in range(0, 60, 10):
+        markup.add(
+            InlineKeyboardButton(
+                text=str(minute),
+                callback_data="minute {year} {month} {day} {hour} {minute}".format(
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=hour,
+                    minute=minute
+                )
+            ),
+            InlineKeyboardButton(
+                text=str(minute + 5),
+                callback_data="minute {year} {month} {day} {hour} {minute}".format(
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=hour,
+                    minute=minute + 5
+                )
+            )
+        )
 
     return markup
