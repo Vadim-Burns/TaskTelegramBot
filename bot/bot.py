@@ -279,21 +279,62 @@ def yes_no_exit_handler(message, user: db.User):
 def task_list_handler(message):
     logging.info("User {tg_id} requested task list".format(tg_id=message.chat.id))
 
-    bot.send_message(
-        message.chat.id,
-        "Here:"
-    )
-
     user = db.User.get_by_tg_id(message.chat.id)
+    tasks = db.Task.get_by_user(user)
 
-    for task in db.Task.select().where(db.Task.user == user).execute():
+    if len(tasks) > 0:
+
         bot.send_message(
             message.chat.id,
-            "Name:\n{name}\nDescription:\n{description}\nStatus:\n{status}".format(
-                name=task.name,
-                description=task.description,
-                status=task.status
+            "Here:"
+        )
+
+        for task in tasks:
+            bot.send_message(
+                message.chat.id,
+                "Name:\n{name}\nDescription:\n{description}\nStatus:\n{status}".format(
+                    name=task.name,
+                    description=task.description,
+                    status=task.status
+                )
             )
+    else:
+        bot.send_message(
+            message.chat.id,
+            "It's empty, but you can use /new_task for creating"
+        )
+
+
+@bot.message_handler(
+    commands=['meeting_list'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def meeting_list_handler(message):
+    logging.info("User {tg_id} requested meeting list".format(tg_id=message.chat.id))
+
+    user = db.User.get_by_tg_id(message.chat.id)
+    meetings = db.Meeting.get_by_user(user)
+
+    if len(meetings) > 0:
+
+        bot.send_message(
+            message.chat.id,
+            "Here:"
+        )
+
+        for meeting in meetings:
+            bot.send_message(
+                message.chat.id,
+                "Name:\n{name}\nDescription:\n{description}\nDate:\n{date}".format(
+                    name=meeting.name,
+                    description=meeting.description,
+                    date=meeting.date
+                )
+            )
+    else:
+        bot.send_message(
+            message.chat.id,
+            "It's empty, but you can use /new_meeting for creating"
         )
 
 

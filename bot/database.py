@@ -53,10 +53,18 @@ class Meeting(BaseTask):
     date = DateTimeField()
     user = ForeignKeyField(User, backref="meetings")
 
+    @staticmethod
+    def get_by_user(user: User) -> 'list of Meeting':
+        return Meeting.select().where(Meeting.user == user)
+
 
 class Task(BaseTask):
     status = CharField(default="not started")
     user = ForeignKeyField(User, backref="tasks")
+
+    @staticmethod
+    def get_by_user(user: User) -> 'list of Task':
+        return Task.select().where(Task.user == user).execute()
 
 
 database.create_tables([User, Meeting, Task])
