@@ -8,11 +8,15 @@ import logging
 import telebot
 
 import bot.config as config
+import bot.database as db
 
 bot = telebot.TeleBot(config.bot_token, parse_mode=None)
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(
+    commands=['start'],
+    func=lambda message: not db.User.is_user_exists(message.chat.id)
+)
 def start(message):
     bot.send_message(message.chat.id, "Howdy! What's your name, dude?")
     bot.register_next_step_handler(message, callback=saving_name_handler)
@@ -24,6 +28,11 @@ def saving_name_handler(message):
     bot.send_message(
         message.chat.id,
         "Okay, {name} is enough good name for me.\nNice to meet you, {name}!".format(name=message.text)
+    )
+
+    db.User.create(
+        tg_id=message.chat.id,
+        name=message.text
     )
 
     logging.info(

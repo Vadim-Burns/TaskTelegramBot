@@ -26,6 +26,10 @@ class User(BaseModel):
     tg_id = IntegerField(unique=True)
     name = CharField()
 
+    @staticmethod
+    def is_user_exists(tg_id: int) -> bool:
+        return User.get_or_none(User.tg_id == tg_id) is not None
+
 
 class BaseTask(BaseModel):
     name = CharField()
