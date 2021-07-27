@@ -30,6 +30,10 @@ class User(BaseModel):
     def is_user_exists(tg_id: int) -> bool:
         return User.get_or_none(User.tg_id == tg_id) is not None
 
+    @staticmethod
+    def get_by_tg_id(tg_id: int) -> 'User':
+        return User.get(User.tg_id == tg_id)
+
 
 class BaseTask(BaseModel):
     name = CharField()
@@ -42,7 +46,7 @@ class Meeting(BaseTask):
 
 
 class Task(BaseTask):
-    status = CharField()
+    status = CharField(default="not started")
 
 
 database.create_tables([User, Meeting, Task])
