@@ -105,16 +105,34 @@ def gen_months_markup(year: int) -> InlineKeyboardMarkup:
     """
     markup = InlineKeyboardMarkup()
 
-    for month in months:
-        markup.add(
-            InlineKeyboardButton(
-                text=month.get("name"),
-                callback_data="month {year} {month}".format(
-                    year=year,
-                    month=month.get("number")
+    for index in range(0, len(months), 2):
+        if index + 1 < len(months):
+            markup.add(
+                InlineKeyboardButton(
+                    text=months[index].get("name"),
+                    callback_data="month {year} {month}".format(
+                        year=year,
+                        month=months[index].get("number")
+                    )
+                ),
+                InlineKeyboardButton(
+                    text=months[index + 1].get("name"),
+                    callback_data="month {year} {month}".format(
+                        year=year,
+                        month=months[index + 1].get("number")
+                    )
                 )
             )
-        )
+        else:
+            markup.add(
+                InlineKeyboardButton(
+                    text=months[index].get("name"),
+                    callback_data="month {year} {month}".format(
+                        year=year,
+                        month=months[index].get("number")
+                    )
+                )
+            )
 
     return markup
 
@@ -122,24 +140,43 @@ def gen_months_markup(year: int) -> InlineKeyboardMarkup:
 def gen_days_markup(year: int, month: int) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     month = months[month - 1]
-    days = month["days"]
+    days = month.get("days")
 
     # Check for February
-    if month["number"] == 2:
+    if month.get("number") == 2:
         if year % 4 == 0:
             days += 1
 
-    # TODO: 2 days in one row
-    for day in range(1, days + 1):
-        markup.add(
-            InlineKeyboardButton(
-                text=str(day),
-                callback_data="day {year} {month} {day}".format(
-                    year=year,
-                    month=month,
-                    day=day
+    for day in range(1, days + 1, 2):
+        if day + 1 <= days:
+            markup.add(
+                InlineKeyboardButton(
+                    text=str(day),
+                    callback_data="day {year} {month} {day}".format(
+                        year=year,
+                        month=month,
+                        day=day
+                    )
+                ),
+                InlineKeyboardButton(
+                    text=str(day + 1),
+                    callback_data="day {year} {month} {day}".format(
+                        year=year,
+                        month=month,
+                        day=day + 1
+                    )
                 )
             )
-        )
+        else:
+            markup.add(
+                InlineKeyboardButton(
+                    text=str(day),
+                    callback_data="day {year} {month} {day}".format(
+                        year=year,
+                        month=month,
+                        day=day
+                    )
+                )
+            )
 
     return markup
