@@ -98,6 +98,7 @@ def new_task_description_handler(message, user: db.User, name: str):
     )
 
 
+# TODO: create scheduling
 @bot.message_handler(
     commands=['new_meeting'],
     func=lambda message: db.User.is_user_exists(message.chat.id)
@@ -207,6 +208,24 @@ def callback_handler(call):
         message_id=call.message.id,
         text=text,
         reply_markup=markup
+    )
+
+
+@bot.message_handler(commands=['help'])
+def help_handler(message):
+    bot.send_message(
+        message.chat.id,
+        "It's list of available commands:\n" +
+        "/new_task - Create new task\n" +
+        "/new_meeting - Create new meeting\n" +
+        "/task_edit - Edit task(not ready)\n" +
+        "/meeting_edit - Edit meeting(not ready)\n" +
+        "/task_list - List tasks(not ready)\n" +
+        "/meeting_list - List meetings(not ready)\n" +
+        "/delete_task - Delete task(not ready)\n" +
+        "/delete_meeting - Delete meeting(not ready)\n" +
+        "/exit - Delete all my info(not ready)\n" +
+        "/help - Print this help message"
     )
 
 
