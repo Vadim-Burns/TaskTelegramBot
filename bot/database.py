@@ -34,19 +34,29 @@ class User(BaseModel):
     def get_by_tg_id(tg_id: int) -> 'User':
         return User.get(User.tg_id == tg_id)
 
+    # TODO: optimize
+    @staticmethod
+    def delete_cascade(tg_id: int):
+        user = User.get(User.tg_id == tg_id)
+
+        Meeting.delete().where(Meeting.user == user).execute()
+        Task.delete().where(Task.user == user).execute()
+        user.delete_instance()
+
 
 class BaseTask(BaseModel):
     name = CharField()
     description = TextField()
-    user = ForeignKeyField(User, backref="meetings")
 
 
 class Meeting(BaseTask):
     date = DateTimeField()
+    user = ForeignKeyField(User, backref="meetings")
 
 
 class Task(BaseTask):
     status = CharField(default="not started")
+    user = ForeignKeyField(User, backref="tasks")
 
 
 database.create_tables([User, Meeting, Task])

@@ -1,4 +1,5 @@
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, \
+    ReplyKeyboardRemove
 
 months = [
     {
@@ -299,3 +300,34 @@ def gen_minutes_markup(year: int, month: int, day: int, hour: int) -> InlineKeyb
         )
 
     return markup
+
+
+# TODO: Realise singleton pattern
+def gen_yes_no_markup() -> ReplyKeyboardMarkup:
+    """
+    Returns simple markup with "Yes"/"No" answer
+
+    :return: ReplyKeyboardMarkup
+    """
+    markup = ReplyKeyboardMarkup()
+
+    markup.add(
+        KeyboardButton(
+            text="Yes"
+        ),
+        KeyboardButton(
+            text="No"
+        )
+    )
+
+    return markup
+
+
+# TODO: Realise singleton pattern
+def gen_delete_markup() -> ReplyKeyboardRemove:
+    """
+    Returns reply keyboard markup that cleans reply keyboard
+
+    :return: ReplyKeyboardRemove
+    """
+    return ReplyKeyboardRemove()

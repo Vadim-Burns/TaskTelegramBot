@@ -224,9 +224,46 @@ def help_handler(message):
         "/meeting_list - List meetings(not ready)\n" +
         "/delete_task - Delete task(not ready)\n" +
         "/delete_meeting - Delete meeting(not ready)\n" +
-        "/exit - Delete all my info(not ready)\n" +
+        "/exit - Delete all my info\n" +
         "/help - Print this help message"
     )
+
+
+@bot.message_handler(
+    commands=['exit'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def exit_handler(message):
+    user = db.User.get_by_tg_id(message.chat.id)
+
+    bot.send_message(
+        message.chat.id,
+        "Delete everything, {name}?".format(name=user.name),
+        reply_markup=markups.gen_yes_no_markup()
+    )
+
+    bot.register_next_step_handler(
+        message,
+        callback=yes_no_exit_handler,
+        user=user
+    )
+
+
+def yes_no_exit_handler(message, user: db.User):
+    if message.text == "Yes":
+        bot.send_message(
+            message.chat.id,
+            "Okay, i was glad to meet you. Good luck, {name}".format(name=user.name),
+            reply_markup=markups.gen_delete_markup()
+        )
+
+        db.User.delete_cascade(message.chat.id)
+    else:
+        bot.send_message(
+            message.chat.id,
+            "Nevermind, i'll forget about this accident",
+            reply_markup=markups.gen_delete_markup()
+        )
 
 
 @bot.message_handler()
