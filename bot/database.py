@@ -56,6 +56,13 @@ class Meeting(BaseTask):
     def get_by_user(user: User) -> 'list of Meeting':
         return Meeting.select().where(Meeting.user == user).execute()
 
+    def to_beauty_str(self) -> str:
+        return "Meeting info:\nName - {name}\nDescription - {description}\nDate - {date}".format(
+            name=self.name,
+            description=self.description,
+            date=self.date
+        )
+
 
 class Task(BaseTask):
     status = CharField(default="not started")
@@ -77,7 +84,12 @@ class Task(BaseTask):
     def update_status_by_id(task_id: int, new_status: str) -> None:
         Task.update(status=new_status).where(Task.id == task_id).execute()
 
-    # TODO: write to str method
+    def to_beauty_str(self) -> str:
+        return "Task info:\nName - {name}\nDescription - {description}\nStatus - {status}".format(
+            name=self.name,
+            description=self.description,
+            status=self.status
+        )
 
 
 database.create_tables([User, Meeting, Task])

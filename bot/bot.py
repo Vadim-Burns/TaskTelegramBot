@@ -301,11 +301,7 @@ def task_list_handler(message):
         for task in tasks:
             bot.send_message(
                 message.chat.id,
-                "Name:\n{name}\nDescription:\n{description}\nStatus:\n{status}".format(
-                    name=task.name,
-                    description=task.description,
-                    status=task.status
-                )
+                task.to_beauty_str()
             )
     else:
         bot.send_message(
@@ -334,11 +330,7 @@ def meeting_list_handler(message):
         for meeting in meetings:
             bot.send_message(
                 message.chat.id,
-                "Name:\n{name}\nDescription:\n{description}\nDate:\n{date}".format(
-                    name=meeting.name,
-                    description=meeting.description,
-                    date=meeting.date
-                )
+                meeting.to_beauty_str()
             )
     else:
         bot.send_message(
@@ -509,11 +501,7 @@ def callback_edit_task_handler(call):
         bot.edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.id,
-            text="Task info:\nName - {name}\nDescription - {description}\nStatus - {status}".format(
-                name=task.name,
-                description=task.description,
-                status=task.status
-            ),
+            text=task.to_beauty_str(),
             reply_markup=markups.gen_edit_task_field_markup(task.id)
         )
 
@@ -577,12 +565,16 @@ def edit_task_field_handler(message, field: str, task_id: int):
 
     bot.send_message(
         chat_id=message.chat.id,
-        text="Done\nTask info:\nName - {name}\nDescription - {description}\nStatus - {status}".format(
-            name=task.name,
-            description=task.description,
-            status=task.status
-        )
+        text="Done\n" + task.to_beauty_str()
     )
+
+
+@bot.message_handler(
+    commands=['meeting_edit'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def meeting_edit_handler(message):
+    pass
 
 
 @bot.message_handler()
