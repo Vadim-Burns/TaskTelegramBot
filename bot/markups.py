@@ -64,6 +64,20 @@ months = [
     },
 ]
 
+# Yes/No markup is always the same, so we generate it only one time
+yes_no_markup = ReplyKeyboardMarkup()
+
+yes_no_markup.add(
+    KeyboardButton(
+        text="Yes"
+    ),
+    KeyboardButton(
+        text="No"
+    )
+)
+
+delete_markup = ReplyKeyboardRemove()
+
 
 def gen_years_markup(years: list) -> InlineKeyboardMarkup:
     """
@@ -302,35 +316,23 @@ def gen_minutes_markup(year: int, month: int, day: int, hour: int) -> InlineKeyb
     return markup
 
 
-# TODO: Realise singleton pattern
 def gen_yes_no_markup() -> ReplyKeyboardMarkup:
     """
     Returns simple markup with "Yes"/"No" answer
 
     :return: ReplyKeyboardMarkup
     """
-    markup = ReplyKeyboardMarkup()
 
-    markup.add(
-        KeyboardButton(
-            text="Yes"
-        ),
-        KeyboardButton(
-            text="No"
-        )
-    )
-
-    return markup
+    return yes_no_markup
 
 
-# TODO: Realise singleton pattern
 def gen_delete_markup() -> ReplyKeyboardRemove:
     """
     Returns reply keyboard markup that cleans reply keyboard
 
     :return: ReplyKeyboardRemove
     """
-    return ReplyKeyboardRemove()
+    return delete_markup
 
 
 def gen_delete_task_markup(task_id: int) -> InlineKeyboardMarkup:
