@@ -232,7 +232,7 @@ def help_handler(message):
         "/task_list - List tasks\n" +
         "/meeting_list - List meetings\n" +
         "/delete_task - Delete task\n" +
-        "/delete_meeting - Delete meeting(not ready)\n" +
+        "/delete_meeting - Delete meeting\n" +
         "/exit - Delete all my info\n" +
         "/help - Print this help message"
     )
@@ -362,7 +362,10 @@ def delete_task_handler(message):
     for task in tasks:
         bot.send_message(
             message.chat.id,
-            "{name} - {status}".format(name=task.name.capitalize(), status=task.status),
+            "{name} - {status}".format(
+                name=task.name.capitalize(),
+                status=task.status
+            ),
             reply_markup=markups.gen_delete_task_markup(task.id)
         )
 
@@ -372,9 +375,11 @@ def delete_task_handler(message):
     db.User.is_user_exists(call.message.chat.id)
     and
     call.data.split()[0] == "delete"
+    and
+    call.data.split()[1] == "task"
 )
 def callback_delete_task_handler(call):
-    task_id = int(call.data.split()[1])
+    task_id = int(call.data.split()[2])
 
     logging.info("User {tg_id} deleting task {task_id}".format(
         tg_id=call.message.chat.id,
@@ -382,6 +387,54 @@ def callback_delete_task_handler(call):
     ))
 
     db.Task.delete_by_id(task_id)
+
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        text="Deleted"
+    )
+
+
+@bot.message_handler(
+    commands=['delete_meeting'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def delete_meeting_handler(message):
+    logging.info("User {tg_id} wants to delete meeting".format(tg_id=message.chat.id))
+
+    user = db.User.get_by_tg_id(message.chat.id)
+    meetings = db.Meeting.get_by_user(user)
+
+    bot.send_message(message.chat.id, "Meetings:")
+
+    for meeting in meetings:
+        bot.send_message(
+            message.chat.id,
+            "{name} - {status}".format(
+                name=meeting.name.capitalize(),
+                status=str(meeting.date)
+            ),
+            reply_markup=markups.gen_delete_meeting_markup(meeting.id)
+        )
+
+
+@bot.callback_query_handler(
+    func=lambda call:
+    db.User.is_user_exists(call.message.chat.id)
+    and
+    call.data.split()[0] == "delete"
+    and
+    call.data.split()[1] == "meeting"
+)
+def callback_delete_meeting_handler(call):
+    meeting_id = int(call.data.split()[2])
+
+    logging.info("User {tg_id} deleting meeting {meeting_id}".format(
+        tg_id=call.message.chat.id,
+        meeting_id=meeting_id
+    ))
+
+    db.Meeting.delete_by_id(meeting_id)
 
     bot.edit_message_text(
         chat_id=call.message.chat.id,

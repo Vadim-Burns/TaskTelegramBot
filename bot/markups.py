@@ -341,10 +341,10 @@ def gen_delete_task_markup(task_id: int) -> InlineKeyboardMarkup:
     14
 
     Callback data format:
-    delete {task_id}
+    delete task {task_id}
 
     Example callback data:
-    "delete 14"
+    "delete task 14"
 
     Returns inline markup for deleting user task
 
@@ -357,7 +357,36 @@ def gen_delete_task_markup(task_id: int) -> InlineKeyboardMarkup:
     markup.add(
         InlineKeyboardButton(
             text="Delete",
-            callback_data="delete {task_id}".format(task_id=task_id)
+            callback_data="delete task {task_id}".format(task_id=task_id)
+        )
+    )
+
+    return markup
+
+
+def gen_delete_meeting_markup(meeting_id: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    14
+
+    Callback data format:
+    delete meeting {meeting_id}
+
+    Example callback data:
+    "delete meeting 14"
+
+    Returns inline markup for deleting user meeting
+
+    :param meeting_id: Id of the meeting to delete
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Delete",
+            callback_data="delete meeting {meeting_id}".format(meeting_id=meeting_id)
         )
     )
 

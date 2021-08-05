@@ -55,7 +55,7 @@ class Meeting(BaseTask):
 
     @staticmethod
     def get_by_user(user: User) -> 'list of Meeting':
-        return Meeting.select().where(Meeting.user == user)
+        return Meeting.select().where(Meeting.user == user).execute()
 
 
 class Task(BaseTask):
