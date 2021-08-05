@@ -149,9 +149,18 @@ def new_meeting_description_handler(message, user: db.User, name: str, due_date:
 
 
 @bot.callback_query_handler(
-    func=lambda call: db.User.is_user_exists(call.message.chat.id)
+    func=lambda call:
+    db.User.is_user_exists(call.message.chat.id)
+    and
+    call.data.split()[0] in [
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute"
+    ]
 )
-def callback_handler(call):
+def callback_datetime_handler(call):
     data = call.data.split()
 
     text = None
@@ -222,7 +231,7 @@ def help_handler(message):
         "/meeting_edit - Edit meeting(not ready)\n" +
         "/task_list - List tasks\n" +
         "/meeting_list - List meetings\n" +
-        "/delete_task - Delete task(not ready)\n" +
+        "/delete_task - Delete task\n" +
         "/delete_meeting - Delete meeting(not ready)\n" +
         "/exit - Delete all my info\n" +
         "/help - Print this help message"
@@ -336,6 +345,49 @@ def meeting_list_handler(message):
             message.chat.id,
             "It's empty, but you can use /new_meeting for creating"
         )
+
+
+@bot.message_handler(
+    commands=['delete_task'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def delete_task_handler(message):
+    logging.info("User {tg_id} wants to delete task".format(tg_id=message.chat.id))
+
+    user = db.User.get_by_tg_id(message.chat.id)
+    tasks = db.Task.get_by_user(user)
+
+    bot.send_message(message.chat.id, "Tasks:")
+
+    for task in tasks:
+        bot.send_message(
+            message.chat.id,
+            "{name} - {status}".format(name=task.name.capitalize(), status=task.status),
+            reply_markup=markups.gen_delete_task_markup(task.id)
+        )
+
+
+@bot.callback_query_handler(
+    func=lambda call:
+    db.User.is_user_exists(call.message.chat.id)
+    and
+    call.data.split()[0] == "delete"
+)
+def callback_delete_task_handler(call):
+    task_id = int(call.data.split()[1])
+
+    logging.info("User {tg_id} deleting task {task_id}".format(
+        tg_id=call.message.chat.id,
+        task_id=task_id
+    ))
+
+    db.Task.delete_by_id(task_id)
+
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        text="Deleted"
+    )
 
 
 @bot.message_handler()

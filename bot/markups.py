@@ -331,3 +331,32 @@ def gen_delete_markup() -> ReplyKeyboardRemove:
     :return: ReplyKeyboardRemove
     """
     return ReplyKeyboardRemove()
+
+
+def gen_delete_task_markup(task_id: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    14
+
+    Callback data format:
+    delete {task_id}
+
+    Example callback data:
+    "delete 14"
+
+    Returns inline markup for deleting user task
+
+    :param task_id: Id of the task to delete
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Delete",
+            callback_data="delete {task_id}".format(task_id=task_id)
+        )
+    )
+
+    return markup
