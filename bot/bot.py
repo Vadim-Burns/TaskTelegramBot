@@ -227,7 +227,7 @@ def help_handler(message):
         "It's list of available commands:\n" +
         "/new_task - Create new task\n" +
         "/new_meeting - Create new meeting\n" +
-        "/task_edit - Edit task(not ready)\n" +
+        "/task_edit - Edit task\n" +
         "/meeting_edit - Edit meeting(not ready)\n" +
         "/task_list - List tasks\n" +
         "/meeting_list - List meetings\n" +
@@ -357,6 +357,14 @@ def delete_task_handler(message):
     user = db.User.get_by_tg_id(message.chat.id)
     tasks = db.Task.get_by_user(user)
 
+    if len(tasks) == 0:
+        bot.send_message(
+            message.chat.id,
+            "You don't have any tasks, but you can use /new_task for creating"
+        )
+
+        return
+
     bot.send_message(message.chat.id, "Tasks:")
 
     for task in tasks:
@@ -405,6 +413,14 @@ def delete_meeting_handler(message):
     user = db.User.get_by_tg_id(message.chat.id)
     meetings = db.Meeting.get_by_user(user)
 
+    if len(meetings) == 0:
+        bot.send_message(
+            message.chat.id,
+            "You don't have any meetings, but you can use /new_meeting for creating"
+        )
+
+        return
+
     bot.send_message(message.chat.id, "Meetings:")
 
     for meeting in meetings:
@@ -440,6 +456,132 @@ def callback_delete_meeting_handler(call):
         chat_id=call.message.chat.id,
         message_id=call.message.id,
         text="Deleted"
+    )
+
+
+@bot.message_handler(
+    commands=['task_edit'],
+    func=lambda message: db.User.is_user_exists(message.chat.id)
+)
+def task_edit_handler(message):
+    logging.info("User {tg_id} wants to edit task".format(tg_id=message.chat.id))
+
+    user = db.User.get_by_tg_id(message.chat.id)
+    tasks = db.Task.get_by_user(user)
+
+    if len(tasks) == 0:
+        bot.send_message(
+            message.chat.id,
+            "You don't have any tasks, but you can use /new_task for creating"
+        )
+
+        return
+
+    bot.send_message(
+        chat_id=message.chat.id,
+        text="Tasks:",
+        reply_markup=markups.gen_edit_tasks_list_markup(tasks)
+    )
+
+
+@bot.callback_query_handler(
+    func=lambda call:
+    db.User.is_user_exists(call.message.chat.id)
+    and
+    call.data.split()[0] == "edit"
+    and
+    call.data.split()[1] == "task"
+)
+def callback_edit_task_handler(call):
+    task_id = int(call.data.split()[3])
+
+    if call.data.split()[2] == "start":
+
+        logging.info(
+            "User {tg_id} wants to edit task {task_id}".format(
+                tg_id=call.message.chat.id,
+                task_id=task_id
+            )
+        )
+
+        task = db.Task.get_by_id(task_id)
+
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.id,
+            text="Task info:\nName - {name}\nDescription - {description}\nStatus - {status}".format(
+                name=task.name,
+                description=task.description,
+                status=task.status
+            ),
+            reply_markup=markups.gen_edit_task_field_markup(task.id)
+        )
+
+    else:
+
+        field = call.data.split()[2]
+
+        logging.info(
+            "User {tg_id} wants to edit task {task_id} {field}".format(
+                tg_id=call.message.chat.id,
+                task_id=task_id,
+                field=field
+            )
+        )
+
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.id,
+            text="Enter new {field} of the task".format(field=field)
+        )
+
+        bot.register_next_step_handler(
+            message=call.message,
+            callback=edit_task_field_handler,
+            field=field,
+            task_id=task_id
+        )
+
+
+def edit_task_field_handler(message, field: str, task_id: int):
+    if field == "name":
+
+        db.Task.update_name_by_id(
+            task_id,
+            message.text
+        )
+
+    elif field == "description":
+
+        db.Task.update_description_by_id(
+            task_id,
+            message.text
+        )
+
+    elif field == "status":
+
+        db.Task.update_status_by_id(
+            task_id,
+            message.text
+        )
+
+    logging.info(
+        "User {tg_id} has editted task {task_id} {field}".format(
+            tg_id=message.chat.id,
+            task_id=task_id,
+            field=field
+        )
+    )
+
+    task = db.Task.get_by_id(task_id)
+
+    bot.send_message(
+        chat_id=message.chat.id,
+        text="Done\nTask info:\nName - {name}\nDescription - {description}\nStatus - {status}".format(
+            name=task.name,
+            description=task.description,
+            status=task.status
+        )
     )
 
 

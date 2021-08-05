@@ -391,3 +391,76 @@ def gen_delete_meeting_markup(meeting_id: int) -> InlineKeyboardMarkup:
     )
 
     return markup
+
+
+def gen_edit_tasks_list_markup(tasks: 'list of Task') -> InlineKeyboardMarkup:
+    """
+    Example input:
+    Task(name="My first task", description="some description", id=1)
+
+    Callback data format:
+    edit task start {task_id}
+
+    Example callback data:
+    "edit task start 1"
+
+    Returns inline markup for the first step of edit task
+
+    :param tasks: List of bot.database.Task
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    for task in tasks:
+        markup.add(
+            InlineKeyboardButton(
+                text=task.name.capitalize(),
+                callback_data="edit task start {task_id}".format(task_id=task.id)
+            )
+        )
+
+    return markup
+
+
+def gen_edit_task_field_markup(task_id: int) -> InlineKeyboardMarkup:
+    """
+    Example input:
+    14
+
+    Callback data format:
+    edit task {field} {task_id}
+
+    Example callback data:
+    "edit task name 14"
+
+    Returns inline markup for the chosen field of edit task
+
+    :param task_id: id of the task
+
+    :return: InlineKeyboardMarkup
+    """
+    markup = InlineKeyboardMarkup()
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Name",
+            callback_data="edit task name {task_id}".format(task_id=task_id)
+        )
+    )
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Description",
+            callback_data="edit task description {task_id}".format(task_id=task_id)
+        )
+    )
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Status",
+            callback_data="edit task status {task_id}".format(task_id=task_id)
+        )
+    )
+
+    return markup
