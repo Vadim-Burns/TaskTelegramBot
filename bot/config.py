@@ -1,5 +1,5 @@
 """
-This file contains configuration variable
+This file contains configuration variables
 """
 
 import os
